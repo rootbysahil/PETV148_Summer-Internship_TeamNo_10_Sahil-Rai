@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMFT Footprint Report - {{ summary.username }}</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #334155;
+        }
+        
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section h1 {
+            margin: 0;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #a78bfa, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-section p {
+            margin: 0.25rem 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .timestamp-info {
+            text-align: right;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Summary Stats Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: auto;
+        }
+
+        .card-value.success { color: var(--success); }
+        .card-value.danger { color: var(--danger); }
+        .card-value.warning { color: var(--warning); }
+
+        /* Main Workspace split layout */
+        .layout-split {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .layout-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Results table */
+        .results-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Status Badge Styling */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-found {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .badge-notfound {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .badge-error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .badge-skipped {
+            background-color: rgba(148, 163, 184, 0.15);
+            color: #cbd5e1;
+        }
+
+        a.profile-link {
+            color: var(--primary);
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.2s;
+        }
+
+        a.profile-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Right column widgets */
+        .aside-widgets {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .widget-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+
+        .widget-panel h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed var(--border);
+            font-size: 0.9rem;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-count {
+            background-color: var(--border);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <h1>SMFT Digital Footprint Scan</h1>
+                <p>Passive OSINT Reconnaissance Report for username: <strong>{{ summary.username }}</strong></p>
+            </div>
+            <div class="timestamp-info">
+                <div>Scan Completed: {{ summary.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} UTC</div>
+                <div>Generated: {{ export_date }}</div>
+            </div>
+        </header>
+
+        <!-- Analytics Overview Cards -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-title">Total Checked</div>
+                <div class="card-value">{{ summary.total_checked }}</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Profiles Found</div>
+                <div class="card-value success">{{ summary.total_found }}</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Success Rate</div>
+                <div class="card-value">{{ summary.success_rate_pct }}%</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Duration</div>
+                <div class="card-value">{{ summary.total_duration_seconds }}s</div>
+            </div>
+        </div>
+
+        <div class="layout-split">
+            <!-- Left Panel: Table of Platform hits -->
+            <main class="results-section">
+                <div class="results-header">
+                    <h2>Target Platform Checks</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Platform</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Profile URL</th>
+                            <th>Response Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hit in hits %}
+                        <tr>
+                            <td><strong>{{ hit.platform_name }}</strong></td>
+                            <td><span style="color: var(--text-muted)">{{ hit.category }}</span></td>
+                            <td>
+                                <span class="badge {{ status_classes[hit.status] }}">
+                                    {{ hit.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if hit.status == 'FOUND' %}
+                                <a href="{{ hit.profile_url }}" target="_blank" class="profile-link">{{ hit.profile_url }}</a>
+                                {% else %}
+                                <span style="color: var(--text-muted)">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if hit.response_time_ms > 0 %}
+                                {{ hit.response_time_ms }} ms
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </main>
+
+            <!-- Right Panel: Side Stats widgets -->
+            <aside class="aside-widgets">
+                <div class="widget-panel">
+                    <h3>Category Breakdown</h3>
+                    {% if summary.category_breakdown %}
+                    <ul class="category-list">
+                        {% for cat, count in summary.category_breakdown.items() %}
+                        <li class="category-item">
+                            <span>{{ cat | capitalize }}</span>
+                            <span class="category-count">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">No category data (no profiles identified).</p>
+                    {% endif %}
+                </div>
+
+                <div class="widget-panel">
+                    <h3>Performance Details</h3>
+                    <div style="font-size: 0.9rem; line-height: 1.8;">
+                        {% if summary.fastest_platform %}
+                        <div><strong>Fastest Response:</strong><br><span style="color: var(--success)">{{ summary.fastest_platform }} ({{ summary.fastest_time_ms }} ms)</span></div>
+                        {% endif %}
+                        {% if summary.slowest_platform %}
+                        <div style="margin-top: 0.75rem;"><strong>Slowest Response:</strong><br><span style="color: var(--danger)">{{ summary.slowest_platform }} ({{ summary.slowest_time_ms }} ms)</span></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <p>This report contains publicly accessible data retrieved via passive network signatures. 
+            All checks conform to robots.txt rules and reasonable rate limiting protocols.</p>
+            <p><strong>Social Media Footprinting Tool (SMFT)</strong> &copy; 2026. Strictly Educational / Authorized Audit Use Only.</p>
+        </footer>
+    </div>
+</body>
+</html>

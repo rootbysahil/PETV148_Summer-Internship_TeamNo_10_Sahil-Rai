@@ -1,0 +1,212 @@
+{
+  "GitHub": {
+    "errorType": "status_code",
+    "url": "https://github.com/{}",
+    "urlMain": "https://github.com/",
+    "category": "coding",
+    "errorStatus": 404
+  },
+  "Reddit": {
+    "errorType": "status_code",
+    "url": "https://www.reddit.com/user/{}",
+    "urlMain": "https://www.reddit.com/",
+    "category": "social",
+    "errorStatus": 404
+  },
+  "Instagram": {
+    "errorType": "status_code",
+    "url": "https://www.instagram.com/{}/",
+    "urlMain": "https://www.instagram.com/",
+    "category": "social",
+    "errorStatus": 404
+  },
+  "Twitter": {
+    "errorType": "status_code",
+    "url": "https://x.com/{}",
+    "urlMain": "https://x.com/",
+    "category": "social",
+    "errorStatus": 404
+  },
+  "Medium": {
+    "errorType": "status_code",
+    "url": "https://medium.com/@{}",
+    "urlMain": "https://medium.com/",
+    "category": "blogging",
+    "errorStatus": 404
+  },
+  "YouTube": {
+    "errorType": "status_code",
+    "url": "https://www.youtube.com/@{}",
+    "urlMain": "https://www.youtube.com/",
+    "category": "media",
+    "errorStatus": 404
+  },
+  "Pinterest": {
+    "errorType": "status_code",
+    "url": "https://www.pinterest.com/{}/",
+    "urlMain": "https://www.pinterest.com/",
+    "category": "social",
+    "errorStatus": 404
+  },
+  "Steam": {
+    "errorType": "message",
+    "url": "https://steamcommunity.com/id/{}",
+    "urlMain": "https://steamcommunity.com/",
+    "category": "gaming",
+    "errorMsg": "The specified profile could not be found."
+  },
+  "DeviantArt": {
+    "errorType": "status_code",
+    "url": "https://www.deviantart.com/{}",
+    "urlMain": "https://www.deviantart.com/",
+    "category": "art",
+    "errorStatus": 404
+  },
+  "Patreon": {
+    "errorType": "status_code",
+    "url": "https://www.patreon.com/{}",
+    "urlMain": "https://www.patreon.com/",
+    "category": "financial",
+    "errorStatus": 404
+  },
+  "SoundCloud": {
+    "errorType": "status_code",
+    "url": "https://soundcloud.com/{}",
+    "urlMain": "https://soundcloud.com/",
+    "category": "music",
+    "errorStatus": 404
+  },
+  "Dribbble": {
+    "errorType": "status_code",
+    "url": "https://dribbble.com/{}",
+    "urlMain": "https://dribbble.com/",
+    "category": "design",
+    "errorStatus": 404
+  },
+  "Behance": {
+    "errorType": "status_code",
+    "url": "https://www.behance.net/{}",
+    "urlMain": "https://www.behance.net/",
+    "category": "design",
+    "errorStatus": 404
+  },
+  "Disqus": {
+    "errorType": "status_code",
+    "url": "https://disqus.com/by/{}/",
+    "urlMain": "https://disqus.com/",
+    "category": "forum",
+    "errorStatus": 404
+  },
+  "GitLab": {
+    "errorType": "status_code",
+    "url": "https://gitlab.com/{}",
+    "urlMain": "https://gitlab.com/",
+    "category": "coding",
+    "errorStatus": 404
+  },
+  "ProductHunt": {
+    "errorType": "status_code",
+    "url": "https://www.producthunt.com/@{}",
+    "urlMain": "https://www.producthunt.com/",
+    "category": "tech",
+    "errorStatus": 404
+  },
+  "Spotify": {
+    "errorType": "status_code",
+    "url": "https://open.spotify.com/user/{}",
+    "urlMain": "https://open.spotify.com/",
+    "category": "music",
+    "errorStatus": 404
+  },
+  "Vimeo": {
+    "errorType": "status_code",
+    "url": "https://vimeo.com/{}",
+    "urlMain": "https://vimeo.com/",
+    "category": "media",
+    "errorStatus": 404
+  },
+  "Devpost": {
+    "errorType": "status_code",
+    "url": "https://devpost.com/{}",
+    "urlMain": "https://devpost.com/",
+    "category": "coding",
+    "errorStatus": 404
+  },
+  "Kaggle": {
+    "errorType": "status_code",
+    "url": "https://www.kaggle.com/{}",
+    "urlMain": "https://www.kaggle.com/",
+    "category": "data-science",
+    "errorStatus": 404
+  },
+  "Letterboxd": {
+    "errorType": "status_code",
+    "url": "https://letterboxd.com/{}/",
+    "urlMain": "https://letterboxd.com/",
+    "category": "media",
+    "errorStatus": 404
+  },
+  "Imgur": {
+    "errorType": "status_code",
+    "url": "https://imgur.com/user/{}",
+    "urlMain": "https://imgur.com/",
+    "category": "media",
+    "errorStatus": 404
+  },
+  "Slack": {
+    "errorType": "status_code",
+    "url": "https://{}.slack.com",
+    "urlMain": "https://slack.com/",
+    "category": "professional",
+    "errorStatus": 404
+  },
+  "SlideShare": {
+    "errorType": "status_code",
+    "url": "https://www.slideshare.net/{}",
+    "urlMain": "https://www.slideshare.net/",
+    "category": "professional",
+    "errorStatus": 404
+  },
+  "DockerHub": {
+    "errorType": "status_code",
+    "url": "https://hub.docker.com/u/{}",
+    "urlMain": "https://hub.docker.com/",
+    "category": "coding",
+    "errorStatus": 404
+  },
+  "Keybase": {
+    "errorType": "status_code",
+    "url": "https://keybase.io/{}",
+    "urlMain": "https://keybase.io/",
+    "category": "security",
+    "errorStatus": 404
+  },
+  "Unsplash": {
+    "errorType": "status_code",
+    "url": "https://unsplash.com/@{}",
+    "urlMain": "https://unsplash.com/",
+    "category": "media",
+    "errorStatus": 404
+  },
+  "Wikipedia": {
+    "errorType": "status_code",
+    "url": "https://en.wikipedia.org/wiki/User:{}",
+    "urlMain": "https://wikipedia.org/",
+    "category": "reference",
+    "errorStatus": 404
+  },
+  "Instructables": {
+    "errorType": "status_code",
+    "url": "https://www.instructables.com/member/{}",
+    "urlMain": "https://www.instructables.com/",
+    "category": "making",
+    "errorStatus": 404
+  },
+  "About.me": {
+    "errorType": "status_code",
+    "url": "https://about.me/{}",
+    "urlMain": "https://about.me/",
+    "category": "portfolio",
+    "errorStatus": 404
+  }
+}
