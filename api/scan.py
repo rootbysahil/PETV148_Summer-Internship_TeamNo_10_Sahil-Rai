@@ -7,8 +7,8 @@ from urllib.parse import parse_qs, urlparse
 
 import httpx
 
-# Resolve signature path relative to function environment
-PLATFORMS_PATH = Path(__file__).parent.parent / "data" / "platforms.json"
+# Resolve signature path relative to function environment (api/ folder)
+PLATFORMS_PATH = Path(__file__).parent / "platforms.json"
 
 
 async def check_platform(client: httpx.AsyncClient, name: str, info: dict, username: str) -> dict:
