@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,6 +24,7 @@ class Settings(BaseSettings):
 # Instantiate settings
 settings = Settings()
 
-# Ensure directories exist
-settings.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-settings.LOG_DIR.mkdir(parents=True, exist_ok=True)
+# Ensure directories exist (only when running locally, not on Vercel)
+if not os.environ.get("VERCEL"):
+    settings.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    settings.LOG_DIR.mkdir(parents=True, exist_ok=True)

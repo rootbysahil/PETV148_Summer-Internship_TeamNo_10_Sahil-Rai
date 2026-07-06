@@ -1,5 +1,7 @@
 import hashlib
 import logging
+import os
+import sys
 from logging.handlers import RotatingFileHandler
 
 from config import settings
@@ -24,6 +26,14 @@ def setup_logger(name: str = "smft") -> logging.Logger:
     formatter = logging.Formatter(
         "[%(asctime)s] %(levelname)s [%(name)s:%(filename)s:%(lineno)d] - %(message)s"
     )
+
+    # Under Vercel Serverless environment, we only log to StreamHandler (stdout)
+    if os.environ.get("VERCEL"):
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+        logger.propagate = False
+        return logger
 
     # Rotating File Handler
     log_file_path = settings.LOG_DIR / "smft.log"
