@@ -1,6 +1,7 @@
-import os
 from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     # App Settings
@@ -16,11 +17,8 @@ class Settings(BaseSettings):
     MASK_USERNAME_IN_LOGS: bool = False
 
     # Config source
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
 
 # Instantiate settings
 settings = Settings()

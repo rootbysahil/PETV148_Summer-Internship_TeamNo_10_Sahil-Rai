@@ -1,8 +1,11 @@
 import json
-import pytest
-from pathlib import Path
-from src.models import ScanResult, ScanSummary, PlatformHit
 from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+from src.models import PlatformHit, ScanResult, ScanSummary
+
 
 @pytest.fixture
 def sample_scan_result() -> ScanResult:
@@ -21,7 +24,7 @@ def sample_scan_result() -> ScanResult:
         slowest_platform="Reddit",
         slowest_time_ms=350.2,
         total_duration_seconds=1.5,
-        category_breakdown={"coding": 1, "social": 1}
+        category_breakdown={"coding": 1, "social": 1},
     )
     hits = [
         PlatformHit(
@@ -30,7 +33,7 @@ def sample_scan_result() -> ScanResult:
             profile_url="https://github.com/testuser",
             status="FOUND",
             http_status=200,
-            response_time_ms=120.5
+            response_time_ms=120.5,
         ),
         PlatformHit(
             platform_name="Reddit",
@@ -38,7 +41,7 @@ def sample_scan_result() -> ScanResult:
             profile_url="https://www.reddit.com/user/testuser",
             status="FOUND",
             http_status=200,
-            response_time_ms=350.2
+            response_time_ms=350.2,
         ),
         PlatformHit(
             platform_name="Instagram",
@@ -46,10 +49,11 @@ def sample_scan_result() -> ScanResult:
             profile_url="https://www.instagram.com/testuser/",
             status="NOT_FOUND",
             http_status=404,
-            response_time_ms=210.1
-        )
+            response_time_ms=210.1,
+        ),
     ]
     return ScanResult(summary=summary, hits=hits)
+
 
 @pytest.fixture
 def mock_platforms_json(tmp_path: Path) -> Path:
@@ -60,15 +64,15 @@ def mock_platforms_json(tmp_path: Path) -> Path:
             "url": "https://mocksite1.com/{}",
             "urlMain": "https://mocksite1.com/",
             "category": "social",
-            "errorStatus": 404
+            "errorStatus": 404,
         },
         "MockSite2": {
             "errorType": "message",
             "url": "https://mocksite2.com/user/{}",
             "urlMain": "https://mocksite2.com/",
             "category": "coding",
-            "errorMsg": "not found"
-        }
+            "errorMsg": "not found",
+        },
     }
     file_path = tmp_path / "test_platforms.json"
     with open(file_path, "w", encoding="utf-8") as f:

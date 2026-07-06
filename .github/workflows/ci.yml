@@ -36,7 +36,7 @@ jobs:
 
     - name: Run Mypy (Type Check)
       run: |
-        mypy --strict src/
+        mypy --strict --explicit-package-bases src/
 
     - name: Run Test Suite with Coverage
       run: |
