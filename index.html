@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMFT Web Dashboard — OSINT Footprint Auditor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #334155;
+            --glass: rgba(30, 41, 59, 0.7);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Container styling */
+        .container {
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
+            flex: 1;
+            padding: 2rem 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-section p {
+            margin: 0.25rem 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .header-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .header-links a:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Input / Control Panel */
+        .search-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+        }
+
+        .search-input {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .search-btn:disabled {
+            background-color: var(--border);
+            cursor: not-allowed;
+            color: var(--text-muted);
+        }
+
+        /* Loading / Progress State */
+        .progress-container {
+            display: none;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .progress-bar-bg {
+            background-color: var(--border);
+            height: 8px;
+            border-radius: 999px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #a78bfa, #6366f1);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Summary Analytics Cards */
+        .stats-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .card-value.success { color: var(--success); }
+
+        /* Main Workspace Split layout */
+        .layout-split {
+            display: none;
+            grid-template-columns: 3fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 900px) {
+            .layout-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .results-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .results-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            background-color: var(--bg-color);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 0.35rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.15);
+        }
+
+        /* Results table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Status Badge Styling */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-found {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .badge-notfound {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .badge-error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        a.profile-link {
+            color: var(--primary);
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.2s;
+        }
+
+        a.profile-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Sidebar widgets */
+        .aside-widgets {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .widget-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .widget-panel h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed var(--border);
+            font-size: 0.9rem;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-count {
+            background-color: var(--border);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Disclaimer Modal overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 90%;
+            padding: 2.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            text-align: left;
+        }
+
+        .modal-card h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: var(--danger);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-body {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .modal-body ul {
+            padding-left: 1.2rem;
+            margin: 0.5rem 0;
+        }
+
+        .modal-agree-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .modal-agree-box input {
+            margin-top: 0.3rem;
+            cursor: pointer;
+        }
+
+        .modal-agree-box label {
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .modal-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .modal-btn:disabled {
+            background-color: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: auto;
+            background-color: rgba(15, 23, 42, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Disclaimer Modal Overlay -->
+    <div id="disclaimerModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2>⚠️ MANDATORY ETHICAL DISCLAIMER</h2>
+            <div class="modal-body">
+                <p>Before launching a footprint scan, you must agree to the following educational usage rules:</p>
+                <ul>
+                    <li>This lookup tool is designed <strong>strictly for authorized auditing, self-footprinting, and digital forensics research</strong>.</li>
+                    <li>It uses passive lookup signatures. No authentication bypass, scraping of private accounts, or CAPTCHA bypass is performed.</li>
+                    <li>You are responsible for compliance with local privacy laws and individual platforms' Terms of Service.</li>
+                </ul>
+            </div>
+            <div class="modal-agree-box">
+                <input type="checkbox" id="agreeCheckbox" onchange="toggleDisclaimerBtn()">
+                <label for="agreeCheckbox">
+                    I certify that I am running this search for legal, authorized audit, or personal footprints checkups only.
+                </label>
+            </div>
+            <button id="acceptBtn" class="modal-btn" disabled onclick="acceptDisclaimer()">Accept & Continue</button>
+        </div>
+    </div>
+
+    <!-- Main web wrapper -->
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <h1>SMFT Web Auditor</h1>
+                <p>Asynchronous Digital Footprint Lookup & Analytics</p>
+            </div>
+            <div class="header-links">
+                <a href="https://github.com/rootbysahil/PETV148_Summer-Internship_TeamNo_10_Sahil-Rai" target="_blank">View GitHub</a>
+            </div>
+        </header>
+
+        <!-- Input Search Pane -->
+        <div class="search-card">
+            <div class="search-form">
+                <input type="text" id="usernameInput" class="search-input" placeholder="Enter target username to scan... (e.g. rootbysahil)" onkeydown="if(event.key === 'Enter') startSearch()">
+                <button id="searchBtn" class="search-btn" onclick="startSearch()">Audit Footprint</button>
+            </div>
+        </div>
+
+        <!-- Progress Spinner -->
+        <div id="progressSection" class="progress-container">
+            <div class="spinner"></div>
+            <div id="progressStatus" style="font-weight: 600;">Contacting platforms database...</div>
+            <div class="progress-bar-bg">
+                <div id="progressBar" class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Statistics grid -->
+        <div id="statsGrid" class="stats-grid">
+            <div class="card">
+                <div class="card-title">Total Platforms Checked</div>
+                <div id="statChecked" class="card-value">-</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Profiles Identified</div>
+                <div id="statFound" class="card-value success">-</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Success Match Rate</div>
+                <div id="statRate" class="card-value">-</div>
+            </div>
+        </div>
+
+        <!-- Splitted Results and widgets workspace -->
+        <div id="resultsLayout" class="layout-split">
+            <!-- Left panel list hits -->
+            <main class="results-panel">
+                <div class="results-header">
+                    <h2>Checked Platform Hits</h2>
+                    <div class="filter-tabs">
+                        <button class="tab-btn active" onclick="filterResults('all', this)">All</button>
+                        <button class="tab-btn" onclick="filterResults('found', this)">Found</button>
+                        <button class="tab-btn" onclick="filterResults('failed', this)">Errors</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Platform</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Profile Link</th>
+                                <th>Response Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+
+            <!-- Right panel widgets summaries -->
+            <aside class="aside-widgets">
+                <div class="widget-panel">
+                    <h3>Category Distribution</h3>
+                    <ul id="categoryBreakdownList" class="category-list">
+                        <!-- Injected dynamically -->
+                    </ul>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <p>Passive OSINT footprint checks. Designed for educational auditing & authorized research.</p>
+            <p><strong>Social Media Footprinting Tool (SMFT)</strong> &copy; 2026. Hosted Live on Vercel.</p>
+        </footer>
+    </div>
+
+    <script>
+        let scanResults = [];
+
+        function toggleDisclaimerBtn() {
+            const checkbox = document.getElementById("agreeCheckbox");
+            document.getElementById("acceptBtn").disabled = !checkbox.checked;
+        }
+
+        function acceptDisclaimer() {
+            document.getElementById("disclaimerModal").style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById("disclaimerModal").style.display = "none";
+            }, 300);
+        }
+
+        async function startSearch() {
+            const input = document.getElementById("usernameInput");
+            const username = input.value.trim();
+
+            if (!username) {
+                alert("Please enter a valid username.");
+                return;
+            }
+
+            // Clean previous state
+            document.getElementById("statsGrid").style.display = "none";
+            document.getElementById("resultsLayout").style.display = "none";
+            document.getElementById("resultsTableBody").innerHTML = "";
+            document.getElementById("categoryBreakdownList").innerHTML = "";
+
+            // Show progress loader
+            const progressSection = document.getElementById("progressSection");
+            const progressStatus = document.getElementById("progressStatus");
+            const progressBar = document.getElementById("progressBar");
+            const searchBtn = document.getElementById("searchBtn");
+
+            progressSection.style.display = "block";
+            searchBtn.disabled = true;
+            input.disabled = true;
+
+            progressStatus.innerText = "Querying platforms server-side...";
+            progressBar.style.width = "40%";
+
+            try {
+                // Call Vercel Python serverless API endpoint
+                const response = await fetch(`/api/scan?username=${encodeURIComponent(username)}`);
+                progressBar.style.width = "80%";
+                
+                if (!response.ok) {
+                    const errPayload = await response.json();
+                    throw new Error(errPayload.error || "Server scan query returned an error.");
+                }
+
+                const data = await response.json();
+                scanResults = data.hits;
+
+                progressBar.style.width = "100%";
+                progressStatus.innerText = "Processing records...";
+
+                setTimeout(() => {
+                    progressSection.style.display = "none";
+                    searchBtn.disabled = false;
+                    input.disabled = false;
+                    renderScanOutputs(data);
+                }, 400);
+
+            } catch (err) {
+                progressSection.style.display = "none";
+                searchBtn.disabled = false;
+                input.disabled = false;
+                alert(`Scan failed: ${err.message}`);
+            }
+        }
+
+        function renderScanOutputs(data) {
+            const s = data.summary;
+
+            // Render stats cards
+            document.getElementById("statChecked").innerText = s.total_checked;
+            document.getElementById("statFound").innerText = s.total_found;
+            document.getElementById("statRate").innerText = `${s.success_rate_pct}%`;
+            document.getElementById("statsGrid").style.display = "grid";
+
+            // Render categories widget list
+            const catList = document.getElementById("categoryBreakdownList");
+            if (Object.keys(s.category_breakdown).length === 0) {
+                catList.innerHTML = `<li class="category-item" style="color: var(--text-muted);">No categories discovered</li>`;
+            } else {
+                for (const [cat, count] of Object.entries(s.category_breakdown)) {
+                    catList.innerHTML += `
+                        <li class="category-item">
+                            <span>${cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                            <span class="category-count">${count}</span>
+                        </li>
+                    `;
+                }
+            }
+
+            // Render table records
+            renderTableRows(scanResults);
+            document.getElementById("resultsLayout").style.display = "grid";
+        }
+
+        function renderTableRows(items) {
+            const tbody = document.getElementById("resultsTableBody");
+            tbody.innerHTML = "";
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No matching profiles found</td></tr>`;
+                return;
+            }
+
+            items.forEach(hit => {
+                let statusBadgeClass = "badge-notfound";
+                if (hit.status === "FOUND") statusBadgeClass = "badge-found";
+                else if (hit.status === "ERROR") statusBadgeClass = "badge-error";
+
+                let linkCol = `<span style="color: var(--text-muted);">N/A</span>`;
+                if (hit.status === "FOUND") {
+                    linkCol = `<a href="${hit.profile_url}" target="_blank" class="profile-link">${hit.profile_url}</a>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr data-status="${hit.status.toLowerCase()}">
+                        <td><strong>${hit.platform_name}</strong></td>
+                        <td style="color: var(--text-muted);">${hit.category}</td>
+                        <td><span class="badge ${statusBadgeClass}">${hit.status}</span></td>
+                        <td>${linkCol}</td>
+                        <td style="color: var(--success);">${hit.response_time_ms ? hit.response_time_ms + ' ms' : '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterResults(filter, element) {
+            // Update active tab styles
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            element.classList.add("active");
+
+            // Filter data
+            if (filter === "all") {
+                renderTableRows(scanResults);
+            } else if (filter === "found") {
+                const foundItems = scanResults.filter(r => r.status === "FOUND");
+                renderTableRows(foundItems);
+            } else if (filter === "failed") {
+                const errorItems = scanResults.filter(r => r.status === "ERROR" || r.status === "UNKNOWN");
+                renderTableRows(errorItems);
+            }
+        }
+    </script>
+</body>
+</html>
