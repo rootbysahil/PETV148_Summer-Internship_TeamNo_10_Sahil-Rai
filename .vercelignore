@@ -1,0 +1,13 @@
+# Ignore CLI entry points and local configs for Vercel builds
+main.py
+config.py
+src/cli.py
+src/banner.py
+src/ui.py
+tests/
+venv/
+requirements-dev.txt
+pyproject.toml
+.pre-commit-config.yaml
+.env
+.env.example
