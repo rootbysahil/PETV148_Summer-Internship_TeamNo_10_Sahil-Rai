@@ -1,13 +1,15 @@
 import asyncio
 import json
 import time
-from urllib.parse import parse_qs, urlparse
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
 import httpx
 
 # Resolve signature path relative to function environment
 PLATFORMS_PATH = Path(__file__).parent.parent / "data" / "platforms.json"
+
 
 async def check_platform(client: httpx.AsyncClient, name: str, info: dict, username: str) -> dict:
     url = info["url"].format(username)
@@ -45,7 +47,7 @@ async def check_platform(client: httpx.AsyncClient, name: str, info: dict, usern
             "profile_url": url,
             "status": status,
             "http_status": http_status,
-            "response_time_ms": round(duration_ms, 2)
+            "response_time_ms": round(duration_ms, 2),
         }
     except Exception as e:
         duration_ms = (time.perf_counter() - start) * 1000.0
@@ -55,12 +57,13 @@ async def check_platform(client: httpx.AsyncClient, name: str, info: dict, usern
             "profile_url": url,
             "status": "ERROR",
             "error_message": str(e),
-            "response_time_ms": round(duration_ms, 2)
+            "response_time_ms": round(duration_ms, 2),
         }
+
 
 async def run_scan(username: str):
     # Load signature definitions
-    with open(PLATFORMS_PATH, "r", encoding="utf-8") as f:
+    with open(PLATFORMS_PATH, encoding="utf-8") as f:
         platforms = json.load(f)
 
     # Set limited concurrency to avoid exceeding server memory or triggering remote shields
@@ -75,6 +78,7 @@ async def run_scan(username: str):
         results = await asyncio.gather(*tasks)
 
     return results
+
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -109,8 +113,10 @@ class handler(BaseHTTPRequestHandler):
                 "total_found": len(found),
                 "total_not_found": total_checked - len(found) - len(errors),
                 "total_errors": len(errors),
-                "success_rate_pct": round((len(found) / total_checked * 100.0) if total_checked > 0 else 0, 2),
-                "category_breakdown": category_breakdown
+                "success_rate_pct": round(
+                    (len(found) / total_checked * 100.0) if total_checked > 0 else 0, 2
+                ),
+                "category_breakdown": category_breakdown,
             }
 
             self.send_response(200)
@@ -124,4 +130,6 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": f"Internal scan error: {str(e)}"}).encode("utf-8"))
+            self.wfile.write(
+                json.dumps({"error": f"Internal scan error: {str(e)}"}).encode("utf-8")
+            )
