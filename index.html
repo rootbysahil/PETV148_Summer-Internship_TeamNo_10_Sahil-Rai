@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMFT Web Dashboard — OSINT Footprint Auditor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>SMFT Web Dashboard — OSINT Footprint Auditor & Threat Risk Intel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for interactive analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -18,6 +20,8 @@
             --warning: #f59e0b;
             --border: #334155;
             --glass: rgba(30, 41, 59, 0.7);
+            --gold: #fbbf24;
+            --gold-gradient: linear-gradient(135deg, #f59e0b, #d97706);
         }
 
         body {
@@ -32,7 +36,6 @@
             flex-direction: column;
         }
 
-        /* Container styling */
         .container {
             max-width: 1200px;
             width: 90%;
@@ -65,6 +68,12 @@
             font-size: 0.95rem;
         }
 
+        .header-links {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
         .header-links a {
             color: var(--text-muted);
             text-decoration: none;
@@ -81,7 +90,7 @@
             background-color: rgba(99, 102, 241, 0.1);
         }
 
-        /* Input / Control Panel */
+        /* Search Card */
         .search-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -141,7 +150,7 @@
             color: var(--text-muted);
         }
 
-        /* Loading / Progress State */
+        /* Progress States */
         .progress-container {
             display: none;
             margin-bottom: 2rem;
@@ -178,7 +187,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Summary Analytics Cards */
+        /* Stats Grid */
         .stats-grid {
             display: none;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -193,6 +202,7 @@
             padding: 1.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, border-color 0.2s;
+            position: relative;
         }
 
         .card:hover {
@@ -214,13 +224,109 @@
         }
 
         .card-value.success { color: var(--success); }
+        .card-value.danger { color: var(--danger); }
+        .card-value.warning { color: var(--warning); }
 
-        /* Main Workspace Split layout */
+        .risk-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        .risk-badge.low { background-color: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .risk-badge.medium { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .risk-badge.high { background-color: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        /* Quick Action Toolbar */
+        .action-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .toolbar-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table-search-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.85rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            outline: none;
+            width: 200px;
+            transition: border-color 0.2s;
+        }
+
+        .table-search-box:focus {
+            border-color: var(--primary);
+        }
+
+        .tool-btn {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .tool-btn.pro-btn {
+            background: var(--gold-gradient);
+            color: #000;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .tool-btn.pro-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .pro-tag {
+            background-color: #000;
+            color: var(--gold);
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        /* Split layout */
         .layout-split {
             display: none;
             grid-template-columns: 3fr 1fr;
             gap: 2rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
 
         @media (max-width: 900px) {
@@ -273,7 +379,6 @@
             background-color: rgba(99, 102, 241, 0.15);
         }
 
-        /* Results table */
         .table-wrapper {
             overflow-x: auto;
         }
@@ -303,7 +408,6 @@
             background-color: rgba(255, 255, 255, 0.02);
         }
 
-        /* Status Badge Styling */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -341,11 +445,11 @@
             text-decoration: underline;
         }
 
-        /* Sidebar widgets */
+        /* Sidebar & Visual Chart */
         .aside-widgets {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .widget-panel {
@@ -365,6 +469,12 @@
             color: var(--text-muted);
         }
 
+        .chart-wrapper {
+            position: relative;
+            height: 220px;
+            margin-bottom: 1rem;
+        }
+
         .category-list {
             list-style: none;
             padding: 0;
@@ -374,9 +484,9 @@
         .category-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
+            padding: 0.4rem 0;
             border-bottom: 1px dashed var(--border);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .category-item:last-child {
@@ -387,12 +497,94 @@
             background-color: var(--border);
             padding: 0.1rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--primary);
         }
 
-        /* Disclaimer Modal overlay */
+        /* Monetization & Hardening Recommendations */
+        .hardening-section {
+            display: none;
+            margin-bottom: 3rem;
+        }
+
+        .hardening-header {
+            margin-bottom: 1.25rem;
+        }
+
+        .hardening-header h2 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.35rem;
+            color: var(--text-main);
+        }
+
+        .hardening-header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .hardening-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .hard-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .hard-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .hard-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .hard-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .hard-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+            flex: 1;
+        }
+
+        .hard-action-btn {
+            background-color: var(--bg-color);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 0.5rem;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .hard-action-btn:hover {
+            background-color: var(--primary);
+            color: #fff;
+        }
+
+        /* Modals (Disclaimer & Pro Paywall) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -417,18 +609,34 @@
             padding: 2.5rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
             text-align: left;
+            position: relative;
         }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .modal-close-btn:hover { color: var(--text-main); }
 
         .modal-card h2 {
             margin-top: 0;
             font-size: 1.5rem;
-            color: var(--danger);
             border-bottom: 1px solid var(--border);
             padding-bottom: 0.75rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
+
+        .modal-card h2.warn { color: var(--danger); }
+        .modal-card h2.pro { color: var(--gold); }
 
         .modal-body {
             color: var(--text-muted);
@@ -477,15 +685,68 @@
             transition: background-color 0.2s;
         }
 
-        .modal-btn:hover {
-            background-color: var(--primary-hover);
-        }
+        .modal-btn:hover { background-color: var(--primary-hover); }
 
         .modal-btn:disabled {
             background-color: var(--border);
             color: var(--text-muted);
             cursor: not-allowed;
         }
+
+        .pro-pricing-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .pro-price {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .pro-modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .pro-modal-actions {
+                flex-direction: column;
+            }
+        }
+
+        .btn-gold {
+            background: var(--gold-gradient);
+            color: #000;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+            transition: opacity 0.2s;
+        }
+
+        .btn-gold:hover { opacity: 0.9; }
+
+        .btn-secondary {
+            background-color: var(--border);
+            color: var(--text-main);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary:hover { background-color: #475569; }
 
         footer {
             border-top: 1px solid var(--border);
@@ -503,7 +764,7 @@
     <!-- Disclaimer Modal Overlay -->
     <div id="disclaimerModal" class="modal-overlay">
         <div class="modal-card">
-            <h2>⚠️ MANDATORY ETHICAL DISCLAIMER</h2>
+            <h2 class="warn">⚠️ MANDATORY ETHICAL DISCLAIMER</h2>
             <div class="modal-body">
                 <p>Before launching a footprint scan, you must agree to the following educational usage rules:</p>
                 <ul>
@@ -522,19 +783,47 @@
         </div>
     </div>
 
-    <!-- Main web wrapper -->
+    <!-- Pro PDF Executive Report Modal -->
+    <div id="proModal" class="modal-overlay" style="display: none; opacity: 0;">
+        <div class="modal-card">
+            <button class="modal-close-btn" onclick="closeProModal()">&times;</button>
+            <h2 class="pro">⭐ Executive Security Audit Report</h2>
+            <div class="modal-body">
+                <p>Generate an official, white-label security intelligence document for your records or client compliance:</p>
+                <ul>
+                    <li><strong>Tamper-Evident Timestamp</strong> & cryptographic verification hash.</li>
+                    <li><strong>Threat Attack Surface Analysis</strong> (credential reuse exposure).</li>
+                    <li><strong>Step-by-Step Mitigation Checklist</strong> to secure exposed accounts.</li>
+                    <li><strong>Clean PDF Layout</strong> without watermarks or tool headers.</li>
+                </ul>
+
+                <div class="pro-pricing-box">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Introductory Offer</div>
+                    <div class="pro-price">₹99 <span style="font-size: 1rem; color: var(--text-muted); font-weight: 400;">/ audit ($1.99)</span></div>
+                    <div style="font-size: 0.8rem; color: var(--success); margin-top: 0.25rem;">Instant Download • Zero subscription</div>
+                </div>
+            </div>
+
+            <div class="pro-modal-actions">
+                <button class="btn-gold" onclick="simulateCheckout()">Unlock Full Executive PDF</button>
+                <button class="btn-secondary" onclick="printAuditPreview()">Print / Preview Audit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
     <div class="container">
         <header>
             <div class="logo-section">
                 <h1>SMFT Web Auditor</h1>
-                <p>Asynchronous Digital Footprint Lookup & Analytics</p>
+                <p>Asynchronous Digital Footprint Lookup & Threat Intelligence Platform</p>
             </div>
             <div class="header-links">
                 <a href="https://github.com/rootbysahil/PETV148_Summer-Internship_TeamNo_10_Sahil-Rai" target="_blank">View GitHub</a>
             </div>
         </header>
 
-        <!-- Input Search Pane -->
+        <!-- Search Input Pane -->
         <div class="search-card">
             <div class="search-form">
                 <input type="text" id="usernameInput" class="search-input" placeholder="Enter target username to scan... (e.g. rootbysahil)" onkeydown="if(event.key === 'Enter') startSearch()">
@@ -542,7 +831,7 @@
             </div>
         </div>
 
-        <!-- Progress Spinner -->
+        <!-- Progress Section -->
         <div id="progressSection" class="progress-container">
             <div class="spinner"></div>
             <div id="progressStatus" style="font-weight: 600;">Contacting platforms database...</div>
@@ -551,10 +840,10 @@
             </div>
         </div>
 
-        <!-- Statistics grid -->
+        <!-- Analytics Statistics Grid -->
         <div id="statsGrid" class="stats-grid">
             <div class="card">
-                <div class="card-title">Total Platforms Checked</div>
+                <div class="card-title">Platforms Checked</div>
                 <div id="statChecked" class="card-value">-</div>
             </div>
             <div class="card">
@@ -562,14 +851,31 @@
                 <div id="statFound" class="card-value success">-</div>
             </div>
             <div class="card">
-                <div class="card-title">Success Match Rate</div>
+                <div class="card-title">Match Ratio</div>
                 <div id="statRate" class="card-value">-</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Threat Exposure Index</div>
+                <div id="statRiskScore" class="card-value">-</div>
+                <span id="statRiskBadge" class="risk-badge low">Low Risk</span>
             </div>
         </div>
 
-        <!-- Splitted Results and widgets workspace -->
+        <!-- Productivity Action Toolbar -->
+        <div id="actionToolbar" class="action-toolbar" style="display: none;">
+            <div class="toolbar-group">
+                <input type="text" id="tableSearchInput" class="table-search-box" placeholder="Filter platform name..." oninput="searchTable()">
+                <button class="tool-btn" onclick="copyFoundLinks()">📋 Copy Found Links</button>
+                <button class="tool-btn" onclick="exportCSV()">📥 Export CSV</button>
+            </div>
+            <div class="toolbar-group">
+                <button class="tool-btn pro-btn" onclick="openProModal()">⭐ Executive PDF Audit <span class="pro-tag">PRO</span></button>
+            </div>
+        </div>
+
+        <!-- Workspace Split Layout -->
         <div id="resultsLayout" class="layout-split">
-            <!-- Left panel list hits -->
+            <!-- Left Panel: Results Table -->
             <main class="results-panel">
                 <div class="results-header">
                     <h2>Checked Platform Hits</h2>
@@ -597,10 +903,13 @@
                 </div>
             </main>
 
-            <!-- Right panel widgets summaries -->
+            <!-- Right Panel: Visual Analytics -->
             <aside class="aside-widgets">
                 <div class="widget-panel">
-                    <h3>Category Distribution</h3>
+                    <h3>Category Breakdown</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
                     <ul id="categoryBreakdownList" class="category-list">
                         <!-- Injected dynamically -->
                     </ul>
@@ -608,14 +917,61 @@
             </aside>
         </div>
 
+        <!-- Hardening & Privacy Recommendations (Monetization & Security Value) -->
+        <section id="hardeningSection" class="hardening-section">
+            <div class="hardening-header">
+                <h2>🛡️ Recommended Security Hardening</h2>
+                <p>Based on your cross-platform digital footprint audit, prioritize these defenses:</p>
+            </div>
+            <div class="hardening-grid">
+                <!-- Card 1: Password Manager -->
+                <div class="hard-card">
+                    <div>
+                        <div class="hard-icon">🔐</div>
+                        <div class="hard-title">Mitigate Credential Stuffing</div>
+                        <div class="hard-desc">
+                            Reusing the username <strong><span class="target-name-slot">target</span></strong> across multiple platforms makes your accounts vulnerable if any one platform suffers a data breach. Ensure unique, 16+ character passwords.
+                        </div>
+                    </div>
+                    <a href="https://bitwarden.com/" target="_blank" class="hard-action-btn">Get Password Vault ➔</a>
+                </div>
+
+                <!-- Card 2: Data Broker Removal -->
+                <div class="hard-card">
+                    <div>
+                        <div class="hard-icon">🧹</div>
+                        <div class="hard-title">Erase Data Broker Records</div>
+                        <div class="hard-desc">
+                            Data brokers correlate your public profiles into comprehensive personal dossiers sold to advertisers and telemarketers. Automatically remove your public records.
+                        </div>
+                    </div>
+                    <a href="https://incogni.com/" target="_blank" class="hard-action-btn">Opt-Out Public Records ➔</a>
+                </div>
+
+                <!-- Card 3: Network Protection -->
+                <div class="hard-card">
+                    <div>
+                        <div class="hard-icon">🛡️</div>
+                        <div class="hard-title">Mask IP & Network Footprint</div>
+                        <div class="hard-desc">
+                            Prevent website telemetry and tracking scripts from tying your browser footprint to your real-world geographic location and ISP.
+                        </div>
+                    </div>
+                    <a href="https://protonvpn.com/" target="_blank" class="hard-action-btn">Encrypt Connection ➔</a>
+                </div>
+            </div>
+        </section>
+
         <footer>
-            <p>Passive OSINT footprint checks. Designed for educational auditing & authorized research.</p>
+            <p>Passive OSINT footprint checks. Designed for educational auditing, defensive security, & authorized research.</p>
             <p><strong>Social Media Footprinting Tool (SMFT)</strong> &copy; 2026. Hosted Live on Vercel.</p>
         </footer>
     </div>
 
     <script>
         let scanResults = [];
+        let currentTargetUsername = "";
+        let categoryChartInstance = null;
 
         function toggleDisclaimerBtn() {
             const checkbox = document.getElementById("agreeCheckbox");
@@ -623,10 +979,32 @@
         }
 
         function acceptDisclaimer() {
-            document.getElementById("disclaimerModal").style.opacity = "0";
+            const modal = document.getElementById("disclaimerModal");
+            modal.style.opacity = "0";
             setTimeout(() => {
-                document.getElementById("disclaimerModal").style.display = "none";
+                modal.style.display = "none";
             }, 300);
+        }
+
+        function openProModal() {
+            const modal = document.getElementById("proModal");
+            modal.style.display = "flex";
+            setTimeout(() => { modal.style.opacity = "1"; }, 10);
+        }
+
+        function closeProModal() {
+            const modal = document.getElementById("proModal");
+            modal.style.opacity = "0";
+            setTimeout(() => { modal.style.display = "none"; }, 300);
+        }
+
+        function simulateCheckout() {
+            alert(`[Pro Checkout Simulation]\n\nUpgrading audit for target: @${currentTargetUsername}\nAmount: ₹99 ($1.99)\n\nIn production, this integrates with Stripe or Razorpay UPI to automatically trigger a signed, unwatermarked PDF download.`);
+        }
+
+        function printAuditPreview() {
+            closeProModal();
+            window.print();
         }
 
         async function startSearch() {
@@ -638,9 +1016,13 @@
                 return;
             }
 
-            // Clean previous state
+            currentTargetUsername = username;
+
+            // Reset UI states
             document.getElementById("statsGrid").style.display = "none";
+            document.getElementById("actionToolbar").style.display = "none";
             document.getElementById("resultsLayout").style.display = "none";
+            document.getElementById("hardeningSection").style.display = "none";
             document.getElementById("resultsTableBody").innerHTML = "";
             document.getElementById("categoryBreakdownList").innerHTML = "";
 
@@ -661,7 +1043,7 @@
                 // Call Vercel Python serverless API endpoint
                 const response = await fetch(`/api/scan?username=${encodeURIComponent(username)}`);
                 progressBar.style.width = "80%";
-                
+
                 if (!response.ok) {
                     const errPayload = await response.json();
                     throw new Error(errPayload.error || "Server scan query returned an error.");
@@ -671,7 +1053,7 @@
                 scanResults = data.hits;
 
                 progressBar.style.width = "100%";
-                progressStatus.innerText = "Processing records...";
+                progressStatus.innerText = "Compiling threat intelligence & metrics...";
 
                 setTimeout(() => {
                     progressSection.style.display = "none";
@@ -688,21 +1070,74 @@
             }
         }
 
+        function computeThreatRisk(foundCount, categoryCount) {
+            // Threat formula based on footprint surface
+            let score = 0;
+            if (foundCount === 0) {
+                return { score: 5, level: "Minimal", class: "low" };
+            }
+
+            score += Math.min(foundCount * 9, 65);
+            score += Math.min(categoryCount * 8, 30);
+            score = Math.min(score, 98);
+
+            if (score <= 30) return { score, level: "Low Exposure", class: "low" };
+            if (score <= 70) return { score, level: "Moderate Risk", class: "medium" };
+            return { score, level: "Critical Exposure", class: "high" };
+        }
+
         function renderScanOutputs(data) {
             const s = data.summary;
+            const categoryCount = Object.keys(s.category_breakdown).length;
+            const risk = computeThreatRisk(s.total_found, categoryCount);
 
-            // Render stats cards
+            // Update stats cards
             document.getElementById("statChecked").innerText = s.total_checked;
             document.getElementById("statFound").innerText = s.total_found;
             document.getElementById("statRate").innerText = `${s.success_rate_pct}%`;
-            document.getElementById("statsGrid").style.display = "grid";
 
-            // Render categories widget list
+            const riskScoreEl = document.getElementById("statRiskScore");
+            const riskBadgeEl = document.getElementById("statRiskBadge");
+            riskScoreEl.innerText = `${risk.score}/100`;
+            riskScoreEl.className = `card-value ${risk.class === 'high' ? 'danger' : (risk.class === 'medium' ? 'warning' : 'success')}`;
+            riskBadgeEl.innerText = risk.level;
+            riskBadgeEl.className = `risk-badge ${risk.class}`;
+
+            document.getElementById("statsGrid").style.display = "grid";
+            document.getElementById("actionToolbar").style.display = "flex";
+
+            // Render category list & chart
+            renderCategoryChartAndList(s.category_breakdown);
+
+            // Update target name placeholders
+            document.querySelectorAll(".target-name-slot").forEach(slot => {
+                slot.innerText = `@${currentTargetUsername}`;
+            });
+
+            // Render table records
+            renderTableRows(scanResults);
+            document.getElementById("resultsLayout").style.display = "grid";
+            document.getElementById("hardeningSection").style.display = "block";
+        }
+
+        function renderCategoryChartAndList(categoryBreakdown) {
             const catList = document.getElementById("categoryBreakdownList");
-            if (Object.keys(s.category_breakdown).length === 0) {
+            catList.innerHTML = "";
+
+            const labels = [];
+            const counts = [];
+            const colors = [
+                '#6366f1', '#10b981', '#f59e0b', '#ec4899', 
+                '#8b5cf6', '#06b6d4', '#14b8a6', '#f97316'
+            ];
+
+            if (Object.keys(categoryBreakdown).length === 0) {
                 catList.innerHTML = `<li class="category-item" style="color: var(--text-muted);">No categories discovered</li>`;
             } else {
-                for (const [cat, count] of Object.entries(s.category_breakdown)) {
+                for (const [cat, count] of Object.entries(categoryBreakdown)) {
+                    labels.push(cat.charAt(0).toUpperCase() + cat.slice(1));
+                    counts.push(count);
+
                     catList.innerHTML += `
                         <li class="category-item">
                             <span>${cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
@@ -712,9 +1147,36 @@
                 }
             }
 
-            // Render table records
-            renderTableRows(scanResults);
-            document.getElementById("resultsLayout").style.display = "grid";
+            // Draw Chart.js Doughnut Chart
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChartInstance) {
+                categoryChartInstance.destroy();
+            }
+
+            if (counts.length > 0) {
+                categoryChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: colors.slice(0, counts.length),
+                            borderColor: '#1e293b',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
         }
 
         function renderTableRows(items) {
@@ -749,20 +1211,65 @@
         }
 
         function filterResults(filter, element) {
-            // Update active tab styles
             document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
             element.classList.add("active");
 
-            // Filter data
             if (filter === "all") {
                 renderTableRows(scanResults);
             } else if (filter === "found") {
-                const foundItems = scanResults.filter(r => r.status === "FOUND");
-                renderTableRows(foundItems);
+                renderTableRows(scanResults.filter(r => r.status === "FOUND"));
             } else if (filter === "failed") {
-                const errorItems = scanResults.filter(r => r.status === "ERROR" || r.status === "UNKNOWN");
-                renderTableRows(errorItems);
+                renderTableRows(scanResults.filter(r => r.status === "ERROR" || r.status === "UNKNOWN"));
             }
+        }
+
+        function searchTable() {
+            const query = document.getElementById("tableSearchInput").value.toLowerCase();
+            const filtered = scanResults.filter(r => 
+                r.platform_name.toLowerCase().includes(query) || 
+                r.category.toLowerCase().includes(query)
+            );
+            renderTableRows(filtered);
+        }
+
+        function copyFoundLinks() {
+            const found = scanResults.filter(r => r.status === "FOUND");
+            if (found.length === 0) {
+                alert("No active profiles found to copy.");
+                return;
+            }
+
+            const text = found.map(r => `${r.platform_name}: ${r.profile_url}`).join("\n");
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`Copied ${found.length} discovered profile links to your clipboard!`);
+            }).catch(() => {
+                alert("Unable to copy to clipboard.");
+            });
+        }
+
+        function exportCSV() {
+            if (!scanResults || scanResults.length === 0) {
+                alert("No scan data available to export.");
+                return;
+            }
+
+            const headers = ["Platform", "Category", "Status", "Profile URL", "Response Time (ms)"];
+            const rows = scanResults.map(r => [
+                `"${r.platform_name}"`,
+                `"${r.category}"`,
+                `"${r.status}"`,
+                `"${r.profile_url}"`,
+                `"${r.response_time_ms || 0}"`
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `smft_footprint_${currentTargetUsername || 'audit'}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
